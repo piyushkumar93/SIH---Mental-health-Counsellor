@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "changeme";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;

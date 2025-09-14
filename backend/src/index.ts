@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import "express-async-errors";
 import http from "http";
 import { Server as SocketIOServer } from "socket.io";
 
@@ -19,7 +18,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
-  cors: { origin: "*" }
+  cors: { origin: "*" },
 });
 
 // basic Socket.io hooks for forum real-time (optional)
@@ -31,7 +30,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("newForumPost", (payload) => {
-    // broadcast to the room
     const { collegeName } = payload || {};
     if (collegeName) io.to(collegeName).emit("newForumPost", payload);
     else io.emit("newForumPost", payload);
