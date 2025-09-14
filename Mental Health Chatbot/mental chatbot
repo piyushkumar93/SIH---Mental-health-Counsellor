@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare - AI Support (Ollama)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; padding: 0 20px 30px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(45deg,#4CAF50,#2196F3); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .logo-text { font-size: 20px; font-weight: 600; color: #333; }
+        .nav-item { padding: 15px 20px; cursor: pointer; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: rgba(103,126,234,0.1); border-left-color: #677eea; }
+        .nav-item .title { font-weight: 600; color: #333; margin-bottom: 4px; }
+        .nav-item .subtitle { font-size: 12px; color: #666; }
+        .emergency-box { margin: 20px; padding: 15px; background: linear-gradient(45deg,#ff6b6b,#ee5a24); border-radius: 10px; color: white; text-align: center; }
+        .emergency-box h4 { margin-bottom: 8px; }
+        .emergency-box p { font-size: 14px; opacity: 0.9; }
+        .main-content { flex: 1; display: flex; flex-direction: column; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); margin: 20px; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 16px; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; padding: 20px; max-height: 60vh; }
+        .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 20px; padding: 10px; background: rgba(248,250,252,0.5); border-radius: 10px; min-height: 300px; }
+        .message { display: flex; gap: 12px; margin-bottom: 20px; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+        .message.user { flex-direction: row-reverse; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+        .bot-avatar { background: linear-gradient(45deg,#4CAF50,#2196F3); color: white; }
+        .user-avatar { background: linear-gradient(45deg,#667eea,#764ba2); color: white; }
+        .message-content { background: white; padding: 15px 20px; border-radius: 20px; max-width: 70%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); line-height: 1.5; }
+        .message.user .message-content { background: linear-gradient(45deg,#667eea,#764ba2); color: white; }
+        .input-container { display: flex; gap: 12px; padding: 15px; background: white; border-radius: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .input-field { flex: 1; border: none; outline: none; padding: 12px 20px; font-size: 16px; border-radius: 20px; background: rgba(248,250,252,0.8); }
+        .send-button { background: linear-gradient(45deg,#4CAF50,#2196F3); color: white; border: none; padding: 12px 24px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: transform 0.2s ease; }
+        .send-button:hover { transform: translateY(-2px); }
+        .send-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .suggestions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .suggestion-btn { background: rgba(103,126,234,0.1); border: 1px solid rgba(103,126,234,0.3); color: #677eea; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; }
+        .suggestion-btn:hover { background: #677eea; color: white; transform: translateY(-2px); }
+        .typing-indicator { display: flex; align-items: center; gap: 8px; color: #666; font-style: italic; }
+        .typing-dots { display: flex; gap: 4px; }
+        .typing-dot { width: 8px; height: 8px; background: #677eea; border-radius: 50%; animation: typing 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-10px);} }
+        .status-online { width: 12px; height: 12px; background: #4CAF50; border-radius: 50%; border: 2px solid white; position: absolute; bottom: 2px; right: 2px; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">💚</div>
+            <div>
+                <div class="logo-text">MindCare</div>
+                <div style="font-size: 12px; color: #666;">AI Support</div>
+            </div>
+        </div>
+        <div class="nav-item active"><div class="title">🏠 Dashboard</div><div class="subtitle">AI Chat & Support</div></div>
+        <div class="nav-item"><div class="title">📅 Resources</div><div class="subtitle">Self-help materials</div></div>
+        <div class="nav-item"><div class="title">🏥 Professional Help</div><div class="subtitle">Find counselors</div></div>
+        <div class="nav-item"><div class="title">⚙️ Settings</div><div class="subtitle">Preferences</div></div>
+        <div class="emergency-box">
+            <h4>🚨 Need immediate help?</h4>
+            <p>Crisis hotline: 988</p><p>Available 24/7</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Welcome to MindCare</h1>
+            <p>Your AI companion is here to listen, support, and answer your questions</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="avatar bot-avatar" style="position: relative;">
+                        🤖<div class="status-online"></div>
+                    </div>
+                    <div class="message-content">
+                        Hello! I'm your AI companion. I can help with everyday questions, provide tips, or just chat with you.  
+                        <br><br>
+                        <small style="opacity: 0.7;">⚠️ Reminder: If you ever feel like you’re in a crisis, please contact emergency services or a professional hotline.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestions">
+                <button class="suggestion-btn" onclick="sendSuggestion('What is 2 + 2?')">What is 2 + 2?</button>
+                <button class="suggestion-btn" onclick="sendSuggestion('How can I manage anxiety?')">How can I manage anxiety?</button>
+                <button class="suggestion-btn" onclick="sendSuggestion('Tell me a fun fact')">Tell me a fun fact</button>
+                <button class="suggestion-btn" onclick="sendSuggestion('Give me study tips')">Give me study tips</button>
+            </div>
+
+            <div class="input-container">
+                <input type="text" class="input-field" id="messageInput" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+                <button class="send-button" id="sendButton" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        let isTyping = false;
+
+        // Ollama API config
+        const OLLAMA_URL = "http://localhost:11434/api/generate";
+        const MODEL = "llama2"; // or "mistral", "gemma", etc.
+
+        async function callLLM(message) {
+            try {
+                const response = await fetch(OLLAMA_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        prompt: formatPrompt(message),
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} - ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                return data.response || getFallbackResponse(message);
+
+            } catch (error) {
+                console.error("API Error:", error);
+                return getFallbackResponse(message);
+            }
+        }
+
+        function formatPrompt(userMessage) {
+            return `You are a helpful and friendly AI assistant.
+Answer questions clearly, conversationally, and politely.
+If the topic is about stress, emotions, or mental health, respond with empathy and support — but do not give medical diagnoses.
+
+User: ${userMessage}
+Assistant:`;
+        }
+
+        function getFallbackResponse(message) {
+            const responses = {
+                anxiety: "I understand anxiety can be overwhelming. Try the 5-4-3-2-1 grounding technique: Name 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, and 1 you can taste.",
+                stress: "Stress is common. Helpful strategies include deep breathing, regular exercise, good sleep, and breaking tasks into smaller steps.",
+                overwhelmed: "Feeling overwhelmed is tough. Try prioritizing tasks, taking breaks, and asking for support.",
+                sad: "It’s okay to feel sad. Talking about it can help. Want to share what’s on your mind?",
+                default: "I'm here to chat and help. What would you like to talk about?"
+            };
+            const lower = message.toLowerCase();
+            if (lower.includes('anxious') || lower.includes('anxiety')) return responses.anxiety;
+            if (lower.includes('stress') || lower.includes('stressed')) return responses.stress;
+            if (lower.includes('overwhelm') || lower.includes('too much')) return responses.overwhelmed;
+            if (lower.includes('sad') || lower.includes('depressed') || lower.includes('down')) return responses.sad;
+            return responses.default;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isTyping) return;
+
+            addMessage(message, true);
+            messageInput.value = '';
+            showTypingIndicator();
+
+            try {
+                const response = await callLLM(message);
+                hideTypingIndicator();
+                addMessage(response, false);
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage("I couldn’t connect right now, but I’m still here to listen. Try again in a moment.", false);
+            }
+        }
+
+        function addMessage(content, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : ''}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+            avatar.textContent = isUser ? '👤' : '🤖';
+            if (!isUser) {
+                const status = document.createElement('div');
+                status.className = 'status-online';
+                avatar.style.position = 'relative';
+                avatar.appendChild(status);
+            }
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            if (isTyping) return;
+            isTyping = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Typing...';
+
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.id = 'typingIndicator';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar bot-avatar';
+            avatar.textContent = '🤖';
+
+            const content = document.createElement('div');
+            content.className = 'message-content typing-indicator';
+            content.innerHTML = `AI is typing
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>`;
+
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(content);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) typingIndicator.remove();
+            isTyping = false;
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send';
+        }
+
+        function sendSuggestion(suggestion) {
+            messageInput.value = suggestion;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
