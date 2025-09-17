@@ -26,7 +26,7 @@ type Appointment = {
   notes?: string;
 };
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function getTokenHeader() {
   const token = localStorage.getItem("token");
@@ -182,7 +182,21 @@ export default function Appointments(): JSX.Element {
   return (
     <div className="flex-1 p-6 bg-background min-h-screen">
       {/* Header */}
-	@@ -89,75 +200,131 @@ export default function Appointments() {
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Appointments</h1>
+        <p className="text-muted-foreground">
+          Book confidential sessions with our licensed counselors and therapists.
+        </p>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search counselors or specialties..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -314,7 +328,12 @@ export default function Appointments(): JSX.Element {
       </div>
 
       {/* Emergency Resources */}
-	@@ -170,17 +337,45 @@ export default function Appointments() {
+      <Card className="p-6 bg-gradient-card shadow-card border border-destructive/20">
+        <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+          <Phone className="h-5 w-5 text-destructive" />
+          Crisis Support
+        </h3>
+        <p className="text-muted-foreground mb-4">
           If you're experiencing a mental health emergency, please reach out immediately.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
