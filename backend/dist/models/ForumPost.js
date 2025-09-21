@@ -36,11 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ForumPost = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const CommentSchema = new mongoose_1.Schema({
-    authorId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    authorId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
     text: { type: String, required: true }
 }, { timestamps: true });
 const ForumPostSchema = new mongoose_1.Schema({
-    authorId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    authorId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
     title: String,
     body: { type: String, required: true },
     tags: [String],
@@ -49,4 +49,4 @@ const ForumPostSchema = new mongoose_1.Schema({
     isAnonymous: { type: Boolean, default: false },
     upvotes: { type: Number, default: 0 }
 }, { timestamps: true });
-exports.ForumPost = mongoose_1.default.model("ForumPost", ForumPostSchema);
+exports.ForumPost = mongoose_1.default.model('ForumPost', ForumPostSchema);

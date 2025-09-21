@@ -17,8 +17,10 @@ const auth_1 = require("../middleware/auth");
 const user_1 = require("../models/user");
 const router = express_1.default.Router();
 // Get current profile
-router.get("/me", auth_1.requireAuth, (req, res) => {
-    const user = req.user;
+router.get('/me', auth_1.requireAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_1.User.findById(req.userId);
+    if (!user)
+        return res.status(404).json({ message: 'User not found' });
     res.json({
         id: user._id,
         name: user.name,
@@ -29,10 +31,10 @@ router.get("/me", auth_1.requireAuth, (req, res) => {
         gender: user.gender,
         role: user.role
     });
-});
+}));
 // Admin: list users
-router.get("/", auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield user_1.User.find().select("-password");
+router.get('/', auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const users = yield user_1.User.find().select('-password');
     res.json(users);
 }));
 exports.default = router;
