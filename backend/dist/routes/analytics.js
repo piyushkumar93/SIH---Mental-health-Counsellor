@@ -18,15 +18,15 @@ const Analytics_1 = require("../models/Analytics");
 const Appointment_1 = require("../models/Appointment");
 const ForumPost_1 = require("../models/ForumPost");
 const router = express_1.default.Router();
-// Admin: create or log analytics event
-router.post("/", auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Admin: create or log analytics event (require auth then admin)
+router.post('/', auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = req.body;
     const entry = new Analytics_1.Analytics(data);
     yield entry.save();
     res.status(201).json(entry);
 }));
 // Admin: compute a simple snapshot (example)
-router.get("/snapshot", auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/snapshot', auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const totalAppointments = yield Appointment_1.Appointment.countDocuments();
     const forumPostsCount = yield ForumPost_1.ForumPost.countDocuments();
     const snapshot = {
@@ -38,8 +38,8 @@ router.get("/snapshot", auth_1.requireAuth, auth_1.requireAdmin, (req, res) => _
     yield entry.save();
     res.json(snapshot);
 }));
-// public: recent analytics (admin-only)
-router.get("/", auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Admin-only: recent analytics
+router.get('/', auth_1.requireAuth, auth_1.requireAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const list = yield Analytics_1.Analytics.find().sort({ timestamp: -1 }).limit(50);
     res.json(list);
 }));

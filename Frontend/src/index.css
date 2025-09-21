@@ -55,9 +55,21 @@ All colors MUST be HSL.
     --peaceful-purple: 262 52% 47%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(203 89% 53%), hsl(197 71% 73%));
-    --gradient-calm: linear-gradient(135deg, hsl(197 71% 90%), hsl(203 89% 85%));
-    --gradient-success: linear-gradient(135deg, hsl(142 71% 85%), hsl(142 71% 45%));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(203 89% 53%),
+      hsl(197 71% 73%)
+    );
+    --gradient-calm: linear-gradient(
+      135deg,
+      hsl(197 71% 90%),
+      hsl(203 89% 85%)
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(142 71% 85%),
+      hsl(142 71% 45%)
+    );
     --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 40% 98%));
 
     /* Shadows */
@@ -89,41 +101,60 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Use low-saturation dark grays to keep contrast without colorful black */
+    --background: 220 6% 8%; /* page background (very dark gray) */
+    --foreground: 210 10% 96%; /* readable, near-white text */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 6% 12%; /* slightly lighter than background */
+    --card-foreground: 210 10% 96%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 6% 14%; /* popover/input surface */
+    --popover-foreground: 210 10% 96%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* primary / accent should be readable on dark backgrounds */
+    --primary: 203 89% 58%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 10% 20%;
+    --secondary-foreground: 210 10% 96%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 10% 18%;
+    --muted-foreground: 210 8% 70%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 197 71% 48%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-dark: 0 62.8% 30%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 220 6% 18%;
+    --input: 220 6% 12%;
+    --ring: 203 89% 58%;
+
+    /* Sidebar tweaks */
+    --sidebar-background: 220 6% 10%;
+    --sidebar-foreground: 210 10% 96%;
+    --sidebar-primary: 224 8% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 6% 14%;
+    --sidebar-accent-foreground: 210 10% 96%;
+    --sidebar-border: 220 6% 16%;
+    --sidebar-ring: 203 89% 58%;
+
+    /* Dark-mode gradients (use subtle dark gradients instead of flattening everything) */
+    --gradient-calm: linear-gradient(135deg, hsl(220 6% 16%), hsl(220 6% 12%));
+    --gradient-card: linear-gradient(135deg, hsl(220 6% 12%), hsl(220 6% 10%));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(203 89% 40%),
+      hsl(197 71% 38%)
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(142 71% 36%),
+      hsl(142 71% 44%)
+    );
   }
 }
 
@@ -134,5 +165,133 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Dark-mode utility overrides
+   Many components use Tailwind's bg-white / bg-gray-* utilities directly.
+   Add theme-aware overrides so these classes map to the design tokens when
+   the `.dark` class is present on the document root. This keeps existing
+   markup while making backgrounds respect dark mode.
+*/
+@layer utilities {
+  .dark .bg-white {
+    background-color: hsl(var(--card)) !important;
+  }
+  .dark .bg-white\/90 {
+    background-color: hsl(var(--card) / 0.9) !important;
+  }
+  .dark .bg-gray-50 {
+    background-color: hsl(var(--popover)) !important;
+  }
+  .dark .bg-gray-100 {
+    background-color: hsl(var(--muted)) !important;
+  }
+  .dark .bg-gray-200 {
+    background-color: hsl(var(--sidebar-background)) !important;
+  }
+  .dark .bg-gray-300 {
+    background-color: hsl(var(--sidebar-accent)) !important;
+  }
+  .dark .bg-gray-400 {
+    background-color: hsl(var(--sidebar-border)) !important;
+  }
+  .dark .bg-gray-50\/90 {
+    background-color: hsl(var(--popover) / 0.9) !important;
+  }
+
+  /* Common border overrides in dark mode */
+  .dark .border-gray-200 {
+    border-color: hsl(var(--border)) !important;
+  }
+  .dark .text-gray-600 {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+  .dark .text-gray-800 {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Preserve gradients in dark mode but use dark variants defined above */
+  .dark .bg-gradient-calm {
+    background-image: var(--gradient-calm) !important;
+  }
+  .dark .bg-gradient-card {
+    background-image: var(--gradient-card) !important;
+  }
+  .dark .bg-gradient-primary {
+    background-image: var(--gradient-primary) !important;
+  }
+  .dark .bg-gradient-success {
+    background-image: var(--gradient-success) !important;
+  }
+
+  /* small utility for destructive dark variant used by buttons */
+  .bg-destructive-dark {
+    background-color: hsl(var(--destructive-dark)) !important;
+  }
+
+  /* Make modals and overlays use card background in dark mode */
+  .dark .shadow-lg,
+  .dark .shadow-sm {
+    box-shadow: none !important;
+  }
+  .dark .rounded-lg,
+  .dark .rounded-2xl {
+    background-clip: padding-box;
+  }
+
+  /* Button contrast helpers for dark mode */
+  .dark .btn-variant-default {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .dark .btn-variant-default:hover {
+    background-color: hsl(var(--primary-dark)) !important;
+  }
+
+  .dark .btn-variant-calming {
+    /* Use primary solid color in dark mode for better readability */
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  .dark .btn-variant-calming:hover {
+    background-color: hsl(var(--primary-dark)) !important;
+  }
+
+  .dark .btn-variant-destructive {
+    background-color: hsl(var(--destructive)) !important;
+    color: hsl(var(--destructive-foreground)) !important;
+  }
+  .dark .btn-variant-destructive:hover {
+    background-color: hsl(var(--destructive-dark)) !important;
+  }
+
+  /* Global vibrant button styles to ensure Book / Accept buttons pop */
+  .btn-variant-default,
+  .btn-variant-calming {
+    /* Prefer gradient for vibrancy, fallback to primary color */
+    background-image: var(--gradient-primary) !important;
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    box-shadow: 0 6px 18px -6px hsl(var(--primary) / 0.6) !important;
+    border: 1px solid hsl(var(--primary) / 0.12) !important;
+    transition: transform 160ms ease, filter 160ms ease !important;
+  }
+  .btn-variant-default:hover,
+  .btn-variant-calming:hover {
+    filter: brightness(0.95) !important;
+    transform: translateY(-1px) scale(1.02) !important;
+  }
+
+  /* Strong destructive button */
+  .btn-variant-destructive {
+    background-color: hsl(var(--destructive)) !important;
+    color: hsl(var(--destructive-foreground)) !important;
+    box-shadow: 0 6px 18px -6px hsl(var(--destructive) / 0.6) !important;
+    border: 1px solid hsl(var(--destructive) / 0.12) !important;
+  }
+  .btn-variant-destructive:hover {
+    filter: brightness(0.92) !important;
+    transform: translateY(-1px) scale(1.02) !important;
   }
 }

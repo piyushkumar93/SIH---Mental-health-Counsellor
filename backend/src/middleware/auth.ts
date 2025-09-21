@@ -1,36 +1,50 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User, IUser } from "../models/user";
-import dotenv from "dotenv";
-dotenv.config();
-
+import { User } from '../models/user'
+export const requireAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.userId) return res.status(401).json({ message: 'Unauthorized' })
+  const user = await User.findById(req.userId)
+  if (!user) return res.status(401).json({ message: 'User not found' })
+  if (user.role !== 'admin')
+    return res.status(403).json({ message: 'Admin only' })
+  next()
+}
 declare global {
   namespace Express {
     interface Request {
-      user?: IUser | null;
+      userId?: string
     }
   }
 }
+import { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+dotenv.config()
 
-const JWT_SECRET = process.env.JWT_SECRET || "";
+// Use same fallback secret as auth route so tokens signed without env var remain valid
+const JWT_SECRET = process.env.JWT_SECRET || 'MentalHealthSecret'
 
-export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  const auth = req.headers.authorization;
-  if (!auth?.startsWith("Bearer ")) return res.status(401).json({ message: "Unauthorized" });
-  const token = auth.split(" ")[1];
+export const requireAuth = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization
+  if (!authHeader) return res.status(401).json({ message: 'No token provided' })
+
+  // Remove Bearer prefix if present
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : authHeader
+
   try {
-    const payload: any = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(payload.id);
-    if (!user) return res.status(401).json({ message: "Invalid token user not found" });
-    req.user = user;
-    next();
+    const payload: any = jwt.verify(token, JWT_SECRET)
+    // Attach userId to request for downstream use
+    req.userId = payload.id
+    next()
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token", error: err });
+    return res.status(401).json({ message: 'Invalid token', error: err })
   }
-};
-
-export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-  if (req.user.role !== "admin") return res.status(403).json({ message: "Admin only" });
-  next();
-};
+}
